@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DrillMind | RTOC AI Copilot Dashboard</title>
+    <meta name="description" content="Real-Time Drilling Operations AI Copilot Dashboard — Anomaly Detection, Well Monitoring, and Intelligent Alerts for the Volve Field">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ===== TOP BAR ===== -->
+    <header id="topbar">
+        <div class="topbar-left">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                        <circle cx="14" cy="14" r="12" stroke="url(#grad)" stroke-width="2.5"/>
+                        <circle cx="14" cy="14" r="5" fill="url(#grad)"/>
+                        <line x1="14" y1="2" x2="14" y2="8" stroke="url(#grad)" stroke-width="2" stroke-linecap="round"/>
+                        <line x1="14" y1="20" x2="14" y2="26" stroke="url(#grad)" stroke-width="2" stroke-linecap="round"/>
+                        <defs>
+                            <linearGradient id="grad" x1="0" y1="0" x2="28" y2="28">
+                                <stop offset="0%" stop-color="#6366f1"/>
+                                <stop offset="100%" stop-color="#06b6d4"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <span class="logo-text">DrillMind</span>
+                <span class="logo-badge">RTOC AI</span>
+            </div>
+        </div>
+        <div class="topbar-center">
+            <div class="well-info">
+                <span class="well-label">Well</span>
+                <span class="well-name" id="wellName">—</span>
+                <span class="divider">|</span>
+                <span class="well-label">Field</span>
+                <span class="well-name" id="fieldName">—</span>
+                <span class="divider">|</span>
+                <span class="well-label">Operator</span>
+                <span class="well-name" id="operatorName">—</span>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <div class="status-indicator" id="connectionStatus">
+                <div class="status-dot"></div>
+                <span>Connecting...</span>
+            </div>
+            <div class="timestamp" id="currentTimestamp">—</div>
+        </div>
+    </header>
+
+    <!-- ===== MAIN LAYOUT ===== -->
+    <main id="mainContent">
+        <!-- KPI Strip -->
+        <section class="kpi-strip" id="kpiStrip">
+            <div class="kpi-card" id="kpiDepth">
+                <div class="kpi-icon depth-icon">▼</div>
+                <div class="kpi-body">
+                    <span class="kpi-value" id="kpiDepthValue">—</span>
+                    <span class="kpi-label">Bit Depth (m)</span>
+                </div>
+            </div>
+            <div class="kpi-card" id="kpiROP">
+                <div class="kpi-icon rop-icon">↓</div>
+                <div class="kpi-body">
+                    <span class="kpi-value" id="kpiROPValue">—</span>
+                    <span class="kpi-label">WOB (kkgf)</span>
+                </div>
+            </div>
+            <div class="kpi-card" id="kpiSPP">
+                <div class="kpi-icon spp-icon">⬡</div>
+                <div class="kpi-body">
+                    <span class="kpi-value" id="kpiSPPValue">—</span>
+                    <span class="kpi-label">SPP (kPa)</span>
+                </div>
+            </div>
+            <div class="kpi-card" id="kpiHookload">
+                <div class="kpi-icon hookload-icon">⚖</div>
+                <div class="kpi-body">
+                    <span class="kpi-value" id="kpiHookloadValue">—</span>
+                    <span class="kpi-label">Hookload (kkgf)</span>
+                </div>
+            </div>
+            <div class="kpi-card" id="kpiTorque">
+                <div class="kpi-icon torque-icon">↻</div>
+                <div class="kpi-body">
+                    <span class="kpi-value" id="kpiTorqueValue">—</span>
+                    <span class="kpi-label">Torque (kN·m)</span>
+                </div>
+            </div>
+            <div class="kpi-card" id="kpiRPM">
+                <div class="kpi-icon rpm-icon">⟳</div>
+                <div class="kpi-body">
+                    <span class="kpi-value" id="kpiRPMValue">—</span>
+                    <span class="kpi-label">RPM</span>
+                </div>
+            </div>
+            <div class="kpi-card anomaly-kpi" id="kpiAnomaly">
+                <div class="kpi-icon anomaly-icon">⚠</div>
+                <div class="kpi-body">
+                    <span class="kpi-value" id="kpiAnomalyScore">—</span>
+                    <span class="kpi-label">Anomaly Score</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Grid -->
+        <section class="charts-grid">
+            <!-- Left Column: Primary Drilling Parameters -->
+            <div class="chart-panel" id="panelSPP">
+                <div class="panel-header">
+                    <h3>Standpipe Pressure</h3>
+                    <span class="panel-unit">kPa</span>
+                </div>
+                <canvas id="chartSPP"></canvas>
+            </div>
+
+            <div class="chart-panel" id="panelHookload">
+                <div class="panel-header">
+                    <h3>Hookload</h3>
+                    <span class="panel-unit">kkgf</span>
+                </div>
+                <canvas id="chartHookload"></canvas>
+            </div>
+
+            <div class="chart-panel" id="panelTorque">
+                <div class="panel-header">
+                    <h3>Surface Torque</h3>
+                    <span class="panel-unit">kN·m</span>
+                </div>
+                <canvas id="chartTorque"></canvas>
+            </div>
+
+            <div class="chart-panel" id="panelPitVolume">
+                <div class="panel-header">
+                    <h3>Active Pit Volume</h3>
+                    <span class="panel-unit">m³</span>
+                </div>
+                <canvas id="chartPitVolume"></canvas>
+            </div>
+
+            <div class="chart-panel wide" id="panelAnomaly">
+                <div class="panel-header">
+                    <h3>Anomaly Score Timeline</h3>
+                    <span class="panel-unit">0–1 scale</span>
+                </div>
+                <canvas id="chartAnomaly"></canvas>
+            </div>
+        </section>
+
+        <!-- Events Panel -->
+        <section class="events-section">
+            <div class="events-panel" id="eventsPanel">
+                <div class="panel-header">
+                    <h3>Anomaly Events</h3>
+                    <div class="event-filters">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="critical">Critical</button>
+                        <button class="filter-btn" data-filter="high">High</button>
+                        <button class="filter-btn" data-filter="medium">Medium</button>
+                    </div>
+                </div>
+                <div class="events-list" id="eventsList">
+                    <div class="loading-events">Loading events...</div>
+                </div>
+            </div>
+
+            <div class="summary-panel" id="summaryPanel">
+                <div class="panel-header">
+                    <h3>Detection Summary</h3>
+                </div>
+                <div class="summary-content" id="summaryContent">
+                    <div class="loading-events">Loading summary...</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

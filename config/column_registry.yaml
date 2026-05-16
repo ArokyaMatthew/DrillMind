@@ -1,0 +1,413 @@
+# =============================================================================
+# DrillMind Column Registry
+# =============================================================================
+# Canonical mapping from raw Volve CSV column names to standardized internal
+# names.  Every module in DrillMind references this file for column names —
+# never hardcode raw CSV headers anywhere else in the codebase.
+#
+# The "raw" key is the EXACT header string in the downloaded CSV.
+# The "name" key is the standardized internal name used across DrillMind.
+# The "unit" key is the physical unit as stated in the raw header.
+# The "category" groups parameters for downstream processing.
+# =============================================================================
+
+# ---- RTOC-critical drilling parameters (time-indexed) ----
+# These are the columns an RTOC analyst monitors on every shift.
+
+time_index:
+  raw: "DateTime parsed"
+  name: "datetime"
+  unit: "ISO8601"
+  category: "index"
+
+# -- Depth --
+hole_depth:
+  raw: "Hole depth (MD) m"
+  name: "hole_depth_md"
+  unit: "m"
+  category: "depth"
+
+bit_depth:
+  raw: "Bit Depth m"
+  name: "bit_depth"
+  unit: "m"
+  category: "depth"
+
+total_vertical_depth:
+  raw: "Total Vertical Depth m"
+  name: "tvd"
+  unit: "m"
+  category: "depth"
+
+block_position:
+  raw: "Block Position m"
+  name: "block_position"
+  unit: "m"
+  category: "depth"
+
+# -- Rate of Penetration --
+rop:
+  raw: "Rate of Penetration m/h"
+  name: "rop"
+  unit: "m/h"
+  category: "rop"
+
+rop_5ft_avg:
+  raw: "Rate of Penetration (5ft avg) m/h"
+  name: "rop_5ft_avg"
+  unit: "m/h"
+  category: "rop"
+
+rop_2min_avg:
+  raw: "Rate of Penetration 2 minute average m/h"
+  name: "rop_2min_avg"
+  unit: "m/h"
+  category: "rop"
+
+# -- Weight on Bit --
+wob:
+  raw: "Weight on Bit kkgf"
+  name: "wob"
+  unit: "kkgf"
+  category: "weight"
+
+wob_corrected:
+  raw: "Corrected Surface Weight on Bit kkgf"
+  name: "wob_corrected"
+  unit: "kkgf"
+  category: "weight"
+
+wob_averaged:
+  raw: "Averaged WOB kkgf"
+  name: "wob_avg"
+  unit: "kkgf"
+  category: "weight"
+
+# -- Hookload --
+hookload:
+  raw: "Total Hookload kkgf"
+  name: "hookload"
+  unit: "kkgf"
+  category: "weight"
+
+hookload_corrected:
+  raw: "Corrected Hookload kkgf"
+  name: "hookload_corrected"
+  unit: "kkgf"
+  category: "weight"
+
+hookload_avg:
+  raw: "Average Hookload kkgf"
+  name: "hookload_avg"
+  unit: "kkgf"
+  category: "weight"
+
+hookload_max:
+  raw: "Maximum Hookload kkgf"
+  name: "hookload_max"
+  unit: "kkgf"
+  category: "weight"
+
+weight_on_hook:
+  raw: "Weight On Hook kkgf"
+  name: "weight_on_hook"
+  unit: "kkgf"
+  category: "weight"
+
+# -- Torque --
+torque_avg:
+  raw: "Average Surface Torque kN.m"
+  name: "torque_avg"
+  unit: "kN.m"
+  category: "torque"
+
+torque_averaged:
+  raw: "Averaged TRQ kN.m"
+  name: "torque_averaged"
+  unit: "kN.m"
+  category: "torque"
+
+# -- Pressure --
+standpipe_pressure:
+  raw: "Stand Pipe Pressure kPa"
+  name: "spp"
+  unit: "kPa"
+  category: "pressure"
+
+standpipe_pressure_avg:
+  raw: "Average Standpipe Pressure kPa"
+  name: "spp_avg"
+  unit: "kPa"
+  category: "pressure"
+
+casing_pressure:
+  raw: "Casing (choke) pressure kPa"
+  name: "casing_pressure"
+  unit: "kPa"
+  category: "pressure"
+
+# -- Flow --
+mud_flow_in:
+  raw: "Mud Flow In L/min"
+  name: "flow_in"
+  unit: "L/min"
+  category: "flow"
+
+flow_pumps:
+  raw: "Flow Pumps L/min"
+  name: "flow_pumps"
+  unit: "L/min"
+  category: "flow"
+
+# -- Rotary --
+rpm_averaged:
+  raw: "Averaged RPM rpm"
+  name: "rpm_avg"
+  unit: "rpm"
+  category: "rotary"
+
+rpm_avg_rotary:
+  raw: "Average Rotary Speed rpm"
+  name: "rpm_rotary"
+  unit: "rpm"
+  category: "rotary"
+
+total_spm:
+  raw: "Total SPM 1/min"
+  name: "spm_total"
+  unit: "1/min"
+  category: "rotary"
+
+# -- Mud Properties --
+mud_density_in:
+  raw: "Mud Density In g/cm3"
+  name: "mud_weight_in"
+  unit: "g/cm3"
+  category: "mud"
+
+mud_density_out:
+  raw: "Mud Density Out g/cm3"
+  name: "mud_weight_out"
+  unit: "g/cm3"
+  category: "mud"
+
+temp_in:
+  raw: "TMP In degC"
+  name: "mud_temp_in"
+  unit: "degC"
+  category: "mud"
+
+temp_out:
+  raw: "Temperature Out degC"
+  name: "mud_temp_out"
+  unit: "degC"
+  category: "mud"
+
+# -- Mud Pit / Tank --
+tank_volume_active:
+  raw: "Tank volume (active) m3"
+  name: "pit_volume_active"
+  unit: "m3"
+  category: "pit"
+
+tank_volume_change:
+  raw: "Tank volume change (active) m3"
+  name: "pit_volume_change"
+  unit: "m3"
+  category: "pit"
+
+# -- Gas --
+methane:
+  raw: "Methane (C1) ppm"
+  name: "gas_c1"
+  unit: "ppm"
+  category: "gas"
+
+ethane:
+  raw: "Ethane (C2) ppm"
+  name: "gas_c2"
+  unit: "ppm"
+  category: "gas"
+
+propane:
+  raw: "Propane (C3) ppm"
+  name: "gas_c3"
+  unit: "ppm"
+  category: "gas"
+
+gas_avg:
+  raw: "Gas (avg) %"
+  name: "gas_total"
+  unit: "%"
+  category: "gas"
+
+# -- MWD / Directional --
+mwd_inclination:
+  raw: "MWD Continuous Inclination dega"
+  name: "inclination"
+  unit: "dega"
+  category: "directional"
+
+mwd_azimuth:
+  raw: "MWD Continuous Azimuth dega"
+  name: "azimuth"
+  unit: "dega"
+  category: "directional"
+
+mwd_gamma_ray:
+  raw: "MWD Gamma Ray (API BH corrected) gAPI"
+  name: "gamma_ray"
+  unit: "gAPI"
+  category: "directional"
+
+# -- Downhole / ECD --
+ecd:
+  raw: "ARC Equivalent Circulating Density g/cm3"
+  name: "ecd"
+  unit: "g/cm3"
+  category: "downhole"
+
+annular_pressure:
+  raw: "ARC Annular Pressure kPa"
+  name: "annular_pressure"
+  unit: "kPa"
+  category: "downhole"
+
+annular_temp:
+  raw: "Annular Temperature degC"
+  name: "annular_temp"
+  unit: "degC"
+  category: "downhole"
+
+# -- Operational State --
+rig_mode:
+  raw: "Rig Mode unitless"
+  name: "rig_mode"
+  unit: "unitless"
+  category: "state"
+
+on_bottom:
+  raw: "On Bottom Status unitless"
+  name: "on_bottom"
+  unit: "unitless"
+  category: "state"
+
+slips_status:
+  raw: "Slips stat (1=Out,0=In) unitless"
+  name: "slips_status"
+  unit: "unitless"
+  category: "state"
+
+bit_on_bottom:
+  raw: "Bit on Bottom unitless"
+  name: "bit_on_bottom"
+  unit: "unitless"
+  category: "state"
+
+# -- Pump Strokes --
+total_strokes:
+  raw: "Total Strokes unitless"
+  name: "total_strokes"
+  unit: "unitless"
+  category: "pumps"
+
+# -- Wellbore Identifier --
+wellbore_name:
+  raw: "nameWellbore"
+  name: "wellbore_name"
+  unit: "text"
+  category: "meta"
+
+log_name:
+  raw: "name"
+  name: "log_name"
+  unit: "text"
+  category: "meta"
+
+
+# ---- Depth-indexed log columns (depth file) ----
+depth_index:
+  raw: "Measured Depth m"
+  name: "measured_depth"
+  unit: "m"
+  category: "index"
+
+
+# ---- Production data columns ----
+production_date:
+  raw: "DATEPRD"
+  name: "date"
+  unit: "date"
+  category: "index"
+
+wellbore_code:
+  raw: "WELL_BORE_CODE"
+  name: "wellbore_code"
+  unit: "text"
+  category: "meta"
+
+on_stream_hrs:
+  raw: "ON_STREAM_HRS"
+  name: "on_stream_hours"
+  unit: "hours"
+  category: "production"
+
+oil_volume:
+  raw: "BORE_OIL_VOL"
+  name: "oil_vol"
+  unit: "Sm3"
+  category: "production"
+
+gas_volume:
+  raw: "BORE_GAS_VOL"
+  name: "gas_vol"
+  unit: "Sm3"
+  category: "production"
+
+water_volume:
+  raw: "BORE_WAT_VOL"
+  name: "water_vol"
+  unit: "Sm3"
+  category: "production"
+
+avg_downhole_pressure:
+  raw: "AVG_DOWNHOLE_PRESSURE"
+  name: "downhole_pressure"
+  unit: "bara"
+  category: "production"
+
+avg_downhole_temperature:
+  raw: "AVG_DOWNHOLE_TEMPERATURE"
+  name: "downhole_temperature"
+  unit: "degC"
+  category: "production"
+
+avg_whp:
+  raw: "AVG_WHP_P"
+  name: "wellhead_pressure"
+  unit: "bara"
+  category: "production"
+
+avg_wht:
+  raw: "AVG_WHT_P"
+  name: "wellhead_temperature"
+  unit: "degC"
+  category: "production"
+
+choke_size:
+  raw: "AVG_CHOKE_SIZE_P"
+  name: "choke_size"
+  unit: "%"
+  category: "production"
+
+flow_kind:
+  raw: "FLOW_KIND"
+  name: "flow_kind"
+  unit: "text"
+  category: "meta"
+
+well_type:
+  raw: "WELL_TYPE"
+  name: "well_type"
+  unit: "text"
+  category: "meta"

@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  drillmind:
+    build: .
+    container_name: drillmind-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data        # Mount data directory
+      - ./config:/app/config    # Mount config
+    environment:
+      - DRILLMIND_MAX_ROWS=50000   # Set to 0 for full dataset
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

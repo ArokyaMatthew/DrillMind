@@ -1,0 +1,35 @@
+# =============================================================================
+# DrillMind Settings
+# =============================================================================
+
+project:
+  name: "DrillMind"
+  version: "0.1.0"
+  well: "15/9-F-9 A"
+  field: "Volve"
+  operator: "Equinor"
+
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  time_log: "data/raw/Norway-NA-15_47_9-F-9 A time.csv"
+  depth_log: "data/raw/Norway-NA-15_47_9-F-9 A depth.csv"
+  production: "data/raw/Volve production data.xlsx"
+  rop_log: "data/raw/ROP data .csv"
+
+replay:
+  speed_multiplier: 10       # 10x real-time by default
+  websocket_host: "0.0.0.0"
+  websocket_port: 8765
+  chunk_size: 100             # rows per batch for efficient streaming
+  emit_interval_ms: 500       # milliseconds between emissions at 1x speed
+
+quality:
+  gap_threshold_seconds: 30   # flag time gaps larger than this
+  spike_zscore_threshold: 4.0 # z-score above which a value is flagged as spike
+  flatline_window: 20         # consecutive identical values to flag
+  min_non_null_ratio: 0.3     # columns with less than 30% data are dropped
+
+api:
+  host: "0.0.0.0"
+  port: 8000
