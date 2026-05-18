@@ -15,7 +15,8 @@ RUN pip install --no-cache-dir -e . 2>/dev/null || \
         pydantic>=2.0 loguru>=0.7 websockets>=12.0 \
         fastapi>=0.110 uvicorn>=0.29 \
         torch --index-url https://download.pytorch.org/whl/cpu \
-        scikit-learn)
+        scikit-learn \
+        chromadb>=0.5 sentence-transformers>=3.0 datasets>=3.0)
 
 # Copy source code
 COPY . .

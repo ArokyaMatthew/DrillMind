@@ -1,32 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DrillMind | RTOC AI Copilot Dashboard</title>
-    <meta name="description" content="Real-Time Drilling Operations AI Copilot Dashboard — Anomaly Detection, Well Monitoring, and Intelligent Alerts for the Volve Field">
+    <meta name="description" content="Real-Time Drilling Operations AI Copilot — Anomaly Detection, Well Monitoring, and Intelligent Alerts for the Volve Field">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="copilot-open">
     <!-- ===== TOP BAR ===== -->
     <header id="topbar">
         <div class="topbar-left">
             <div class="logo">
                 <div class="logo-icon">
-                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                        <circle cx="14" cy="14" r="12" stroke="url(#grad)" stroke-width="2.5"/>
-                        <circle cx="14" cy="14" r="5" fill="url(#grad)"/>
-                        <line x1="14" y1="2" x2="14" y2="8" stroke="url(#grad)" stroke-width="2" stroke-linecap="round"/>
-                        <line x1="14" y1="20" x2="14" y2="26" stroke="url(#grad)" stroke-width="2" stroke-linecap="round"/>
-                        <defs>
-                            <linearGradient id="grad" x1="0" y1="0" x2="28" y2="28">
-                                <stop offset="0%" stop-color="#6366f1"/>
-                                <stop offset="100%" stop-color="#06b6d4"/>
-                            </linearGradient>
-                        </defs>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="10"/>
+                        <circle cx="12" cy="12" r="4"/>
+                        <line x1="12" y1="2" x2="12" y2="7"/>
+                        <line x1="12" y1="17" x2="12" y2="22"/>
                     </svg>
                 </div>
                 <span class="logo-text">DrillMind</span>
@@ -46,6 +40,7 @@
             </div>
         </div>
         <div class="topbar-right">
+            <button class="theme-toggle" id="themeToggle" title="Toggle theme">☾</button>
             <div class="status-indicator" id="connectionStatus">
                 <div class="status-dot"></div>
                 <span>Connecting...</span>
@@ -54,132 +49,310 @@
         </div>
     </header>
 
+    <!-- ===== ALERT TICKER ===== -->
+    <div class="alert-ticker" id="alertTicker">
+        <div class="ticker-label">⚠ ALERTS</div>
+        <div class="ticker-track">
+            <div class="ticker-content" id="tickerContent">
+                <span class="ticker-item ticker-info">DrillMind v0.3.0 — Agent Orchestrator + DDR RAG Active — System monitoring nominal</span>
+            </div>
+        </div>
+    </div>
+
     <!-- ===== MAIN LAYOUT ===== -->
     <main id="mainContent">
-        <!-- KPI Strip -->
+        <!-- KPI Strip — 10 tiles, never wrap -->
         <section class="kpi-strip" id="kpiStrip">
+            <!-- 1. Bit Depth -->
             <div class="kpi-card" id="kpiDepth">
-                <div class="kpi-icon depth-icon">▼</div>
-                <div class="kpi-body">
-                    <span class="kpi-value" id="kpiDepthValue">—</span>
-                    <span class="kpi-label">Bit Depth (m)</span>
+                <div class="kpi-top-row">
+                    <div class="kpi-icon"><svg viewBox="0 0 24 24"><path d="M12 2v14M8 12l4 6 4-6"/><path d="M9 20h6" stroke-dasharray="2 2"/></svg></div>
+                    <div class="kpi-body">
+                        <span class="kpi-value" id="kpiDepthValue">—</span>
+                        <span class="kpi-label">Bit Depth (m)</span>
+                    </div>
                 </div>
+                <div class="kpi-minmax"><span id="kpiDepthMin">▼ —</span><span id="kpiDepthMax">▲ —</span></div>
+                <canvas class="kpi-sparkline" id="sparkDepth"></canvas>
             </div>
-            <div class="kpi-card" id="kpiROP">
-                <div class="kpi-icon rop-icon">↓</div>
-                <div class="kpi-body">
-                    <span class="kpi-value" id="kpiROPValue">—</span>
-                    <span class="kpi-label">WOB (kkgf)</span>
+            <!-- 2. WOB -->
+            <div class="kpi-card" id="kpiWOB">
+                <div class="kpi-top-row">
+                    <div class="kpi-icon"><svg viewBox="0 0 24 24"><path d="M12 2v16M8 14l4 5 4-5"/><rect x="6" y="2" width="12" height="4" rx="1"/></svg></div>
+                    <div class="kpi-body">
+                        <span class="kpi-value" id="kpiROPValue">—</span>
+                        <span class="kpi-label">WOB (kkgf)</span>
+                    </div>
                 </div>
+                <div class="kpi-minmax"><span id="kpiWOBMin">▼ —</span><span id="kpiWOBMax">▲ —</span></div>
+                <canvas class="kpi-sparkline" id="sparkWOB"></canvas>
             </div>
+            <!-- 3. SPP -->
             <div class="kpi-card" id="kpiSPP">
-                <div class="kpi-icon spp-icon">⬡</div>
-                <div class="kpi-body">
-                    <span class="kpi-value" id="kpiSPPValue">—</span>
-                    <span class="kpi-label">SPP (kPa)</span>
+                <div class="kpi-top-row">
+                    <div class="kpi-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/><path d="M12 3v2M12 19v2"/></svg></div>
+                    <div class="kpi-body">
+                        <span class="kpi-value" id="kpiSPPValue">—</span>
+                        <span class="kpi-label">SPP (kPa)</span>
+                    </div>
                 </div>
+                <div class="kpi-minmax"><span id="kpiSPPMin">▼ —</span><span id="kpiSPPMax">▲ —</span></div>
+                <canvas class="kpi-sparkline" id="sparkSPP"></canvas>
             </div>
+            <!-- 4. Hookload -->
             <div class="kpi-card" id="kpiHookload">
-                <div class="kpi-icon hookload-icon">⚖</div>
-                <div class="kpi-body">
-                    <span class="kpi-value" id="kpiHookloadValue">—</span>
-                    <span class="kpi-label">Hookload (kkgf)</span>
+                <div class="kpi-top-row">
+                    <div class="kpi-icon"><svg viewBox="0 0 24 24"><path d="M12 2v6"/><path d="M8 8c0 2.2 1.8 4 4 4s4-1.8 4-4"/><path d="M12 12v4"/><path d="M9 16c0 1.7 1.3 3 3 3s3-1.3 3-3"/></svg></div>
+                    <div class="kpi-body">
+                        <span class="kpi-value" id="kpiHookloadValue">—</span>
+                        <span class="kpi-label">Hookload (kkgf)</span>
+                    </div>
                 </div>
+                <div class="kpi-minmax"><span id="kpiHookMin">▼ —</span><span id="kpiHookMax">▲ —</span></div>
+                <canvas class="kpi-sparkline" id="sparkHookload"></canvas>
             </div>
+            <!-- 5. Torque -->
             <div class="kpi-card" id="kpiTorque">
-                <div class="kpi-icon torque-icon">↻</div>
-                <div class="kpi-body">
-                    <span class="kpi-value" id="kpiTorqueValue">—</span>
-                    <span class="kpi-label">Torque (kN·m)</span>
+                <div class="kpi-top-row">
+                    <div class="kpi-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/><path d="M12 6v6l4 2"/><path d="M5 12H2M22 12h-3"/></svg></div>
+                    <div class="kpi-body">
+                        <span class="kpi-value" id="kpiTorqueValue">—</span>
+                        <span class="kpi-label">Torque (kN·m)</span>
+                    </div>
                 </div>
+                <div class="kpi-minmax"><span id="kpiTorqueMin">▼ —</span><span id="kpiTorqueMax">▲ —</span></div>
+                <canvas class="kpi-sparkline" id="sparkTorque"></canvas>
             </div>
+            <!-- 6. RPM -->
             <div class="kpi-card" id="kpiRPM">
-                <div class="kpi-icon rpm-icon">⟳</div>
-                <div class="kpi-body">
-                    <span class="kpi-value" id="kpiRPMValue">—</span>
-                    <span class="kpi-label">RPM</span>
+                <div class="kpi-top-row">
+                    <div class="kpi-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5"/><path d="M15.5 14.5l-3.5-2.5"/><circle cx="12" cy="12" r="1.5"/></svg></div>
+                    <div class="kpi-body">
+                        <span class="kpi-value" id="kpiRPMValue">—</span>
+                        <span class="kpi-label">RPM</span>
+                    </div>
+                </div>
+                <div class="kpi-minmax"><span id="kpiRPMMin">▼ —</span><span id="kpiRPMMax">▲ —</span></div>
+                <canvas class="kpi-sparkline" id="sparkRPM"></canvas>
+            </div>
+            <!-- 7. MSE -->
+            <div class="kpi-card" id="kpiMSE">
+                <div class="kpi-top-row">
+                    <div class="kpi-icon"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 14l5-5 3 3 8-8"/></svg></div>
+                    <div class="kpi-body">
+                        <span class="kpi-value" id="kpiMSEValue">—</span>
+                        <span class="kpi-label">MSE (MPa)</span>
+                    </div>
+                </div>
+                <div class="kpi-minmax"><span id="kpiMSEMin">▼ —</span><span id="kpiMSEMax">▲ —</span></div>
+                <canvas class="kpi-sparkline" id="sparkMSE"></canvas>
+            </div>
+            <!-- 8. Anomaly Score -->
+            <div class="kpi-card anomaly-kpi" id="kpiAnomaly">
+                <div class="kpi-top-row">
+                    <div class="kpi-icon"><svg viewBox="0 0 24 24"><path d="M10.3 3.3L2 19h20L13.7 3.3a2 2 0 00-3.4 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="16" r="0.5"/></svg></div>
+                    <div class="kpi-body">
+                        <span class="kpi-value" id="kpiAnomalyScore">—</span>
+                        <span class="kpi-label">Anomaly Score</span>
+                    </div>
+                </div>
+                <canvas class="kpi-sparkline" id="sparkAnomaly"></canvas>
+            </div>
+            <!-- 9. Rig State -->
+            <div class="kpi-card rig-state-kpi" id="kpiRigState">
+                <div class="kpi-top-row">
+                    <div class="kpi-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.2 4.2l2.8 2.8M17 17l2.8 2.8M1 12h4M19 12h4M4.2 19.8l2.8-2.8M17 7l2.8-2.8"/></svg></div>
+                    <div class="kpi-body">
+                        <span class="kpi-value" id="kpiRigStateValue">—</span>
+                        <span class="kpi-label">Rig State</span>
+                    </div>
                 </div>
             </div>
-            <div class="kpi-card anomaly-kpi" id="kpiAnomaly">
-                <div class="kpi-icon anomaly-icon">⚠</div>
-                <div class="kpi-body">
-                    <span class="kpi-value" id="kpiAnomalyScore">—</span>
-                    <span class="kpi-label">Anomaly Score</span>
+            <!-- 10. On Bottom -->
+            <div class="kpi-card on-bottom-kpi" id="kpiOnBottom">
+                <div class="kpi-top-row">
+                    <div class="kpi-icon" id="kpiOnBottomIcon"><svg viewBox="0 0 24 24"><path d="M12 2v14M8 12l4 6 4-6"/><line x1="6" y1="22" x2="18" y2="22" stroke-width="2"/></svg></div>
+                    <div class="kpi-body">
+                        <span class="kpi-value" id="kpiOnBottomValue">—</span>
+                        <span class="kpi-label">Bit Status</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Well Schematic + Charts side by side -->
+        <section class="schematic-section">
+            <div class="chart-panel schematic-panel">
+                <div class="panel-header">
+                    <h3>Well Schematic — <span id="schematicWellName">15/9-F-9 A</span>  <span class="panel-unit" id="schematicField">North Sea, Volve Field</span></h3>
+                </div>
+                <div class="schematic-container" id="wellSchematic">
+                    <svg class="well-svg" id="wellSVG" viewBox="0 0 300 450" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Sea Level -->
+                        <rect x="0" y="0" width="300" height="25" fill="rgba(59,130,246,0.08)" stroke="none"/>
+                        <text x="10" y="17" fill="#60a5fa" font-size="9" font-family="Inter">Sea Level | 79m</text>
+                        <!-- Seabed -->
+                        <line x1="0" y1="40" x2="300" y2="40" stroke="#475569" stroke-width="1" stroke-dasharray="4 3"/>
+                        <text x="10" y="53" fill="#94a3b8" font-size="8" font-family="Inter">Seabed</text>
+                        <!-- Conductor 30" -->
+                        <rect x="85" y="25" width="70" height="60" fill="none" stroke="#64748b" stroke-width="2" rx="2"/>
+                        <text x="160" y="55" fill="#94a3b8" font-size="7" font-family="JetBrains Mono">30" Conductor</text>
+                        <text x="160" y="65" fill="#64748b" font-size="6" font-family="JetBrains Mono">0–82m MD</text>
+                        <!-- Surface 18⅝" -->
+                        <rect x="95" y="85" width="50" height="70" fill="none" stroke="#64748b" stroke-width="1.5" rx="2"/>
+                        <text x="150" y="120" fill="#94a3b8" font-size="7" font-family="JetBrains Mono">18⅝" Surface</text>
+                        <text x="150" y="130" fill="#64748b" font-size="6" font-family="JetBrains Mono">0–450m MD</text>
+                        <!-- Intermediate 13⅜" -->
+                        <rect x="102" y="155" width="36" height="90" fill="none" stroke="#64748b" stroke-width="1.2" rx="2"/>
+                        <text x="145" y="200" fill="#94a3b8" font-size="7" font-family="JetBrains Mono">13⅜" Intermediate</text>
+                        <text x="145" y="210" fill="#64748b" font-size="6" font-family="JetBrains Mono">0–2,100m MD</text>
+                        <!-- Formation: Nordland -->
+                        <rect x="35" y="170" width="50" height="40" fill="rgba(74,222,128,0.06)" stroke="rgba(74,222,128,0.2)" stroke-width="0.5" rx="4"/>
+                        <text x="42" y="188" fill="#4ade80" font-size="7" font-weight="600" font-family="Inter">Nordland</text>
+                        <text x="42" y="198" fill="#64748b" font-size="6" font-family="JetBrains Mono">Fm.</text>
+                        <!-- Production 9⅝" -->
+                        <rect x="108" y="245" width="24" height="100" fill="none" stroke="#64748b" stroke-width="1" rx="2"/>
+                        <text x="140" y="300" fill="#94a3b8" font-size="7" font-family="JetBrains Mono">9⅝" Production</text>
+                        <text x="140" y="310" fill="#64748b" font-size="6" font-family="JetBrains Mono">0–3,600m MD</text>
+                        <!-- Formation: Hugin -->
+                        <rect x="35" y="255" width="50" height="35" fill="rgba(251,191,36,0.06)" stroke="rgba(251,191,36,0.2)" stroke-width="0.5" rx="4"/>
+                        <text x="42" y="272" fill="#fbbf24" font-size="7" font-weight="600" font-family="Inter">Hugin</text>
+                        <text x="42" y="282" fill="#64748b" font-size="6" font-family="JetBrains Mono">Sst.</text>
+                        <!-- Formation: Reservoir -->
+                        <rect x="35" y="340" width="50" height="40" fill="rgba(248,113,113,0.06)" stroke="rgba(248,113,113,0.15)" stroke-width="0.5" rx="4"/>
+                        <text x="42" y="358" fill="#f87171" font-size="7" font-weight="600" font-family="Inter">Reservoir</text>
+                        <text x="42" y="368" fill="#64748b" font-size="6" font-family="JetBrains Mono">Target</text>
+                        <!-- Open Hole -->
+                        <line x1="120" y1="345" x2="120" y2="410" stroke="#67e8f9" stroke-width="1" stroke-dasharray="3 3"/>
+                        <!-- Bit Indicator -->
+                        <g id="bitIndicator" transform="translate(120, 400)">
+                            <polygon points="0,-8 -6,4 6,4" fill="#67e8f9" opacity="0.9"/>
+                            <circle cx="0" cy="0" r="3" fill="#67e8f9">
+                                <animate attributeName="opacity" values="1;0.4;1" dur="1.5s" repeatCount="indefinite"/>
+                            </circle>
+                        </g>
+                        <!-- Bit depth label -->
+                        <text id="bitDepthLabel" x="135" y="405" fill="#67e8f9" font-size="8" font-family="JetBrains Mono" font-weight="500">Bit: 0m</text>
+                        <!-- TD marker -->
+                        <line x1="100" y1="430" x2="140" y2="430" stroke="#f87171" stroke-width="1.5"/>
+                        <text x="145" y="433" fill="#f87171" font-size="7" font-family="JetBrains Mono">TD: 4,890m MD</text>
+                    </svg>
                 </div>
             </div>
         </section>
 
         <!-- Charts Grid -->
-        <section class="charts-grid">
-            <!-- Left Column: Primary Drilling Parameters -->
+        <section class="charts-grid" id="chartsGrid">
             <div class="chart-panel" id="panelSPP">
                 <div class="panel-header">
                     <h3>Standpipe Pressure</h3>
                     <span class="panel-unit">kPa</span>
                 </div>
-                <canvas id="chartSPP"></canvas>
+                <canvas id="chartSPP" height="200"></canvas>
             </div>
-
             <div class="chart-panel" id="panelHookload">
                 <div class="panel-header">
                     <h3>Hookload</h3>
                     <span class="panel-unit">kkgf</span>
                 </div>
-                <canvas id="chartHookload"></canvas>
+                <canvas id="chartHookload" height="200"></canvas>
             </div>
-
             <div class="chart-panel" id="panelTorque">
                 <div class="panel-header">
                     <h3>Surface Torque</h3>
                     <span class="panel-unit">kN·m</span>
                 </div>
-                <canvas id="chartTorque"></canvas>
+                <canvas id="chartTorque" height="200"></canvas>
             </div>
-
-            <div class="chart-panel" id="panelPitVolume">
+            <div class="chart-panel" id="panelPit">
                 <div class="panel-header">
                     <h3>Active Pit Volume</h3>
                     <span class="panel-unit">m³</span>
                 </div>
-                <canvas id="chartPitVolume"></canvas>
-            </div>
-
-            <div class="chart-panel wide" id="panelAnomaly">
-                <div class="panel-header">
-                    <h3>Anomaly Score Timeline</h3>
-                    <span class="panel-unit">0–1 scale</span>
-                </div>
-                <canvas id="chartAnomaly"></canvas>
+                <canvas id="chartPit" height="200"></canvas>
             </div>
         </section>
 
-        <!-- Events Panel -->
-        <section class="events-section">
+        <!-- Anomaly Timeline -->
+        <section class="charts-grid">
+            <div class="chart-panel wide" id="panelAnomaly">
+                <div class="panel-header">
+                    <h3>Anomaly Score Timeline</h3>
+                    <div class="replay-controls" id="replayControls">
+                        <button class="replay-btn active" data-speed="1">● 1×</button>
+                        <button class="replay-btn" data-speed="10">10×</button>
+                        <button class="replay-btn" data-speed="100">100×</button>
+                    </div>
+                </div>
+                <canvas id="chartAnomaly" height="180"></canvas>
+            </div>
+        </section>
+
+        <!-- Anomaly Events + Detection Summary -->
+        <section class="anomaly-section" id="anomalySection">
             <div class="events-panel" id="eventsPanel">
                 <div class="panel-header">
                     <h3>Anomaly Events</h3>
-                    <div class="event-filters">
+                    <div class="event-filters" id="eventFilters">
                         <button class="filter-btn active" data-filter="all">All</button>
                         <button class="filter-btn" data-filter="critical">Critical</button>
                         <button class="filter-btn" data-filter="high">High</button>
                         <button class="filter-btn" data-filter="medium">Medium</button>
                     </div>
                 </div>
-                <div class="events-list" id="eventsList">
-                    <div class="loading-events">Loading events...</div>
-                </div>
+                <div class="events-list" id="eventsList"></div>
             </div>
+            <div class="chart-panel summary-panel" id="summaryPanel">
+                <div class="panel-header"><h3>Detection Summary</h3></div>
+                <div class="summary-content" id="summaryContent"></div>
+            </div>
+        </section>
 
-            <div class="summary-panel" id="summaryPanel">
+        <!-- Offset Well Comparison -->
+        <section class="offset-section" id="offsetSection">
+            <div class="chart-panel offset-panel">
                 <div class="panel-header">
-                    <h3>Detection Summary</h3>
+                    <h3>Offset Well Comparison — Cumulative Production</h3>
+                    <span class="panel-unit">Production by Well</span>
                 </div>
-                <div class="summary-content" id="summaryContent">
-                    <div class="loading-events">Loading summary...</div>
-                </div>
+                <canvas id="chartOffset" height="280"></canvas>
             </div>
         </section>
     </main>
+
+    <!-- ===== COPILOT TOGGLE ===== -->
+    <button class="copilot-toggle" id="copilotToggle" title="Toggle Copilot">AI</button>
+
+    <!-- ===== COPILOT RIGHT PANEL ===== -->
+    <section class="copilot-section" id="copilotSection">
+        <div class="copilot-panel">
+            <div class="panel-header copilot-header">
+                <h3>
+                    <span class="copilot-badge">AI</span>
+                    DrillMind Copilot
+                </h3>
+                <span class="copilot-status" id="copilotStatus">Ready</span>
+            </div>
+            <div class="copilot-messages" id="copilotMessages">
+                <div class="copilot-welcome">
+                    <div class="welcome-icon">⛏</div>
+                    <p>Ask me about the drilling operation.</p>
+                    <div class="suggested-queries">
+                        <button class="suggestion-btn" data-query="What is the current rig state and are there any anomalies?">Current status</button>
+                        <button class="suggestion-btn" data-query="What were the most critical anomaly events detected?">Top anomalies</button>
+                        <button class="suggestion-btn" data-query="Is the current MSE within normal range?">MSE analysis</button>
+                        <button class="suggestion-btn" data-query="What mud weight was used when drilling the Hugin formation?">DDR: Mud weight</button>
+                        <button class="suggestion-btn" data-query="Search DDRs for stuck pipe or high torque events">DDR: Stuck pipe</button>
+                        <button class="suggestion-btn" data-query="Compare production across all Volve wells">Well comparison</button>
+                    </div>
+                </div>
+            </div>
+            <div class="copilot-input-area">
+                <input type="text" id="copilotInput" placeholder="Ask about drilling operations..." autocomplete="off">
+                <button id="copilotSend" class="copilot-send-btn">→</button>
+            </div>
+        </div>
+    </section>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
     <script src="app.js"></script>

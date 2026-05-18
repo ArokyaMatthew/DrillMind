@@ -218,7 +218,7 @@ def classify_anomalies(
     anomaly_scores: np.ndarray,
     anomaly_mask: np.ndarray,
     base_columns: list[str] | None = None,
-    merge_window: int = 10,
+    merge_window: int = 30,
 ) -> list[AnomalyEvent]:
     """
     Classify detected anomalies into drilling problem categories.

@@ -265,7 +265,7 @@ def run_quality_check(df: pd.DataFrame) -> DataQualityReport:
     Returns
     -------
     DataQualityReport
-        Comprehensive quality report.
+        Full quality report.
     """
     settings = get_settings().quality
 

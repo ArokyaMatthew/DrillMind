@@ -1,5 +1,4 @@
-"""
-Anomaly Detection Models
+"""Anomaly Detection Models
 =========================
 Three complementary models that together detect different classes of
 drilling anomalies:
@@ -8,7 +7,9 @@ drilling anomalies:
    high reconstruction error = novel anomaly.
 2. **Isolation Forest** (scikit-learn) — catches multivariate point
    anomalies without requiring labeled data.
-3. **Ensemble Scorer** — combines both model scores into a single
+3. **LSTM Autoencoder** (PyTorch) — catches temporal sequence patterns
+   that precede anomalies by minutes.
+4. **Ensemble Scorer** — combines all model scores into a single
    anomaly score with configurable weighting.
 
 Each model is designed to work on the feature matrix from
@@ -278,7 +279,7 @@ class AutoencoderDetector:
     def load(self, path: str | Path) -> None:
         """Load a saved model."""
         path = Path(path)
-        meta = torch.load(path / "autoencoder_meta.pt", map_location=self.config.device)
+        meta = torch.load(path / "autoencoder_meta.pt", map_location=self.config.device, weights_only=False)  # contains numpy arrays
 
         self.scaler.mean_ = meta["scaler_mean"]
         self.scaler.scale_ = meta["scaler_scale"]
@@ -289,7 +290,7 @@ class AutoencoderDetector:
             bottleneck_ratio=meta["bottleneck_ratio"],
         ).to(self.config.device)
         self.model.load_state_dict(
-            torch.load(path / "autoencoder_weights.pt", map_location=self.config.device)
+            torch.load(path / "autoencoder_weights.pt", map_location=self.config.device, weights_only=True)
         )
         self.model.eval()
         self._is_fitted = True
@@ -389,6 +390,24 @@ class IsolationForestDetector:
         predictions = self.model.predict(X_scaled)
         return (predictions == -1).astype(int)
 
+    def save(self, path: str | Path) -> None:
+        """Save model and scaler to disk."""
+        import joblib
+        path = Path(path)
+        path.mkdir(parents=True, exist_ok=True)
+        joblib.dump(self.model, path / "iforest_model.joblib")
+        joblib.dump(self.scaler, path / "iforest_scaler.joblib")
+        logger.info("Isolation Forest saved to {}", path)
+
+    def load(self, path: str | Path) -> None:
+        """Load a saved model."""
+        import joblib
+        path = Path(path)
+        self.model = joblib.load(path / "iforest_model.joblib")
+        self.scaler = joblib.load(path / "iforest_scaler.joblib")
+        self._is_fitted = True
+        logger.info("Isolation Forest loaded from {}", path)
+
 
 # ============================================================================
 # Ensemble Scorer
@@ -398,16 +417,16 @@ class IsolationForestDetector:
 class EnsembleConfig:
     autoencoder_weight: float = 0.6
     isolation_forest_weight: float = 0.4
+    lstm_weight: float = 0.0  # Set >0 when LSTM is attached
     anomaly_percentile: float = 97.0  # scores above this percentile = anomaly
 
 
 class EnsembleDetector:
-    """
-    Combines autoencoder and isolation forest scores into a single
-    anomaly score.
+    """Combines AE, Isolation Forest, and (optionally) LSTM scores
+    into a single anomaly score.
 
-    The ensemble approach reduces false positives: a point must look
-    anomalous to BOTH models to receive a high combined score.
+    When LSTM is attached, weights shift to 50/30/20.
+    Without LSTM, defaults to 60/40.
     """
 
     def __init__(
@@ -418,9 +437,24 @@ class EnsembleDetector:
     ) -> None:
         self.ae = autoencoder
         self.ifo = isolation_forest
+        self.lstm = None  # Optional; set via attach_lstm()
         self.config = config or EnsembleConfig()
         self._threshold: float = 0.0
         self._is_calibrated = False
+        self._lstm_scores_cache: np.ndarray | None = None
+
+    def attach_lstm(self, lstm_scores: np.ndarray) -> None:
+        """Attach pre-computed LSTM scores and rebalance weights to 50/30/20."""
+        self._lstm_scores_cache = lstm_scores
+        self.config.autoencoder_weight = 0.50
+        self.config.isolation_forest_weight = 0.30
+        self.config.lstm_weight = 0.20
+        logger.info(
+            "LSTM attached to ensemble — weights: AE={:.0%} IF={:.0%} LSTM={:.0%}",
+            self.config.autoencoder_weight,
+            self.config.isolation_forest_weight,
+            self.config.lstm_weight,
+        )
 
     def calibrate(self, X: pd.DataFrame | np.ndarray) -> dict[str, Any]:
         """
@@ -454,34 +488,25 @@ class EnsembleDetector:
             "score_p99": float(np.percentile(scores, 99)),
         }
 
+    def _normalize(self, arr: np.ndarray) -> np.ndarray:
+        """Min-max normalize to [0, 1]."""
+        lo, hi = arr.min(), arr.max()
+        return (arr - lo) / max(hi - lo, 1e-10)
+
     def score(self, X: pd.DataFrame | np.ndarray) -> np.ndarray:
-        """
-        Compute combined anomaly score (0 to 1 scale).
-
-        Parameters
-        ----------
-        X : pd.DataFrame | np.ndarray
-            Feature matrix.
-
-        Returns
-        -------
-        np.ndarray
-            Combined score per sample.  Higher = more anomalous.
-        """
-        ae_scores = self.ae.score(X)
-        ifo_scores = self.ifo.score(X)
-
-        # Normalize each to 0-1 range using min-max scaling
-        ae_min, ae_max = ae_scores.min(), ae_scores.max()
-        ifo_min, ifo_max = ifo_scores.min(), ifo_scores.max()
-
-        ae_norm = (ae_scores - ae_min) / max(ae_max - ae_min, 1e-10)
-        ifo_norm = (ifo_scores - ifo_min) / max(ifo_max - ifo_min, 1e-10)
+        """Compute combined anomaly score (0 to 1 scale)."""
+        ae_norm = self._normalize(self.ae.score(X))
+        ifo_norm = self._normalize(self.ifo.score(X))
 
         combined = (
             self.config.autoencoder_weight * ae_norm
             + self.config.isolation_forest_weight * ifo_norm
         )
+
+        # Add LSTM contribution if available
+        if self._lstm_scores_cache is not None and self.config.lstm_weight > 0:
+            lstm_norm = self._normalize(self._lstm_scores_cache[:len(combined)])
+            combined = combined + self.config.lstm_weight * lstm_norm
 
         return combined
 
@@ -496,35 +521,65 @@ class EnsembleDetector:
     def score_with_details(
         self, X: pd.DataFrame | np.ndarray
     ) -> dict[str, np.ndarray]:
-        """
-        Return individual and combined scores for detailed analysis.
-
-        Returns
-        -------
-        dict
-            Keys: "combined", "autoencoder", "isolation_forest", "is_anomaly"
-        """
+        """Return individual and combined scores for detailed analysis."""
         ae_scores = self.ae.score(X)
         ifo_scores = self.ifo.score(X)
 
-        ae_min, ae_max = ae_scores.min(), ae_scores.max()
-        ifo_min, ifo_max = ifo_scores.min(), ifo_scores.max()
-
-        ae_norm = (ae_scores - ae_min) / max(ae_max - ae_min, 1e-10)
-        ifo_norm = (ifo_scores - ifo_min) / max(ifo_max - ifo_min, 1e-10)
+        ae_norm = self._normalize(ae_scores)
+        ifo_norm = self._normalize(ifo_scores)
 
         combined = (
             self.config.autoencoder_weight * ae_norm
             + self.config.isolation_forest_weight * ifo_norm
         )
 
-        return {
+        result = {
             "combined": combined,
             "autoencoder": ae_scores,
             "autoencoder_norm": ae_norm,
             "isolation_forest": ifo_scores,
             "isolation_forest_norm": ifo_norm,
-            "is_anomaly": (combined > self._threshold).astype(int)
-            if self._is_calibrated
-            else np.zeros(len(combined), dtype=int),
         }
+
+        # Add LSTM scores if available
+        if self._lstm_scores_cache is not None and self.config.lstm_weight > 0:
+            lstm_scores = self._lstm_scores_cache[:len(combined)]
+            lstm_norm = self._normalize(lstm_scores)
+            combined = combined + self.config.lstm_weight * lstm_norm
+            result["combined"] = combined
+            result["lstm"] = lstm_scores
+            result["lstm_norm"] = lstm_norm
+
+        result["is_anomaly"] = (
+            (combined > self._threshold).astype(int)
+            if self._is_calibrated
+            else np.zeros(len(combined), dtype=int)
+        )
+
+        return result
+
+    def save(self, path: str | Path) -> None:
+        """Save ensemble config (threshold, weights, LSTM scores cache)."""
+        path = Path(path)
+        path.mkdir(parents=True, exist_ok=True)
+        torch.save({
+            "threshold": self._threshold,
+            "is_calibrated": self._is_calibrated,
+            "ae_weight": self.config.autoencoder_weight,
+            "if_weight": self.config.isolation_forest_weight,
+            "lstm_weight": self.config.lstm_weight,
+            "lstm_scores_cache": self._lstm_scores_cache,
+        }, path / "ensemble_meta.pt")
+        logger.info("Ensemble saved to {}", path)
+
+    def load(self, path: str | Path) -> None:
+        """Load ensemble config."""
+        path = Path(path)
+        meta = torch.load(path / "ensemble_meta.pt", map_location="cpu", weights_only=False)  # contains numpy arrays + config
+        self._threshold = meta["threshold"]
+        self._is_calibrated = meta["is_calibrated"]
+        self.config.autoencoder_weight = meta["ae_weight"]
+        self.config.isolation_forest_weight = meta["if_weight"]
+        self.config.lstm_weight = meta["lstm_weight"]
+        self._lstm_scores_cache = meta.get("lstm_scores_cache")
+        logger.info("Ensemble loaded from {} (threshold={:.4f})", path, self._threshold)
