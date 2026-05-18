@@ -1,6 +1,6 @@
 # DrillMind
 
-**An AI copilot for real-time drilling operations — built on real data, not toy demos.**
+**An AI copilot for real-time drilling operations — built on real data.**
 
 DrillMind watches live drilling telemetry, detects anomalies before they become incidents, classifies rig states automatically, and answers plain-English questions about what's happening downhole. Think of it as having a senior drilling engineer who never sleeps, never gets distracted, and has instant recall of every daily report ever written on the field.
 
