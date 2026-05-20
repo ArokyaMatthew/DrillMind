@@ -1,5 +1,5 @@
 """
-DrillMind — Multi-Agent Orchestrator
+DrillMind — Query Orchestrator
 ======================================
 Framework-free iterative tool-calling agent.
 
@@ -197,7 +197,7 @@ class OrchestratorResult:
 
 class AgentOrchestrator:
     """
-    Multi-tool agent orchestrator for drilling intelligence.
+    Tool-calling query orchestrator for drilling data.
 
     Supports two modes:
     1. **LLM mode**: LLM selects tools and synthesizes answers
@@ -218,7 +218,7 @@ class AgentOrchestrator:
 
     async def query(self, question: str) -> OrchestratorResult:
         """
-        Process a natural language question using multi-tool orchestration.
+        Process a natural language question using tool-based orchestration.
 
         Parameters
         ----------
@@ -391,14 +391,14 @@ class AgentOrchestrator:
                         lines.append(f"- **{well}**: {metric_str}")
 
         lines.append("\n---")
-        lines.append("*Agent mode: rule-based | Configure Ollama/OpenAI for LLM-powered analysis*")
+        lines.append("*Mode: rule-based | Configure Ollama/OpenAI for LLM-backed answers*")
 
         return "\n".join(lines)
 
     def _build_agent_system_prompt(self) -> str:
         """Build system prompt for LLM agent."""
         tools_desc = get_tool_descriptions()
-        return f"""You are DrillMind, an AI copilot for Real-Time Operations Centers (RTOC) in oil & gas drilling.
+        return f"""You are DrillMind, a drilling data analysis system for Real-Time Operations Centers (RTOC) in oil & gas drilling.
 
 You have access to the following tools that have already been called to gather evidence:
 

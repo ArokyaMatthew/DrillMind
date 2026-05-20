@@ -1,5 +1,5 @@
 """
-DrillMind — Domain-Specialized Agent Tools
+DrillMind — Domain Tools
 ============================================
 Eight tools that the agent orchestrator can invoke to gather evidence
 for answering drilling questions.  Each tool is a pure function that

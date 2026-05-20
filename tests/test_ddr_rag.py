@@ -141,7 +141,7 @@ class TestRAGStore:
 # ---------------------------------------------------------------------------
 
 class TestAgentTools:
-    """Test domain-specialized agent tools."""
+    """Test domain tools."""
 
     def test_tool_registry_populated(self):
         from drillmind.agents.tools import TOOL_REGISTRY
@@ -164,7 +164,7 @@ class TestAgentTools:
 # ---------------------------------------------------------------------------
 
 class TestOrchestrator:
-    """Test multi-agent orchestrator."""
+    """Test query orchestrator."""
 
     def test_intent_classification(self):
         from drillmind.agents.orchestrator import IntentRouter

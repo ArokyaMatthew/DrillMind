@@ -1,8 +1,8 @@
 # DrillMind
 
-**An AI copilot for real-time drilling operations — built on real data.**
+**Real-time drilling analytics — built on real data.**
 
-DrillMind watches live drilling telemetry, detects anomalies before they become incidents, classifies rig states automatically, and answers plain-English questions about what's happening downhole. Think of it as having a senior drilling engineer who never sleeps, never gets distracted, and has instant recall of every daily report ever written on the field.
+DrillMind monitors live drilling telemetry, detects anomalies before they become incidents, classifies rig states, and answers plain-English questions about what's happening downhole — all grounded in actual sensor data and daily drilling reports from the Volve field.
 
 Built entirely on the [Equinor Volve open dataset](https://www.equinor.com/energy/volve-data-sharing) — 419,745 rows of real sensor data from a real well on the Norwegian Continental Shelf. No synthetic data. No mock services. Every column name verified against the actual CSV files.
 
@@ -27,11 +27,11 @@ Computes Mechanical Specific Energy (MSE), d-exponent, and corrected d-exponent 
 ### DDR Search (RAG)
 1,588 Daily Drilling Reports from the Volve field, chunked by activity blocks, embedded with `all-MiniLM-L6-v2`, and stored in ChromaDB. Ask "when did we last see lost circulation?" and get answers grounded in actual operational records.
 
-### AI Copilot
-A multi-tool agent with 10 domain-specialized tools. You ask a question in English, it figures out which data to look at (sensors? anomalies? KPIs? DDRs?), calls the right tools, and synthesizes an answer. Works with local LLMs (Ollama/Mistral), OpenAI, Anthropic, or a pure rule-based fallback that needs no API keys.
+### Query Engine
+A tool-calling query engine with 10 domain tools. You ask a question in English, it figures out which data to look at (sensors? anomalies? KPIs? DDRs?), calls the right tools, and synthesizes an answer. Works with local LLMs (Ollama/Mistral), OpenAI, Anthropic, or a rule-based fallback that needs no API keys.
 
 ### RTOC Dashboard
-ISA-101-compliant HMI with muted gray-scale palette, live-updating charts, KPI gauges, anomaly timeline, rig state indicator, and copilot chat. Designed for 12-hour shift operators who need situational awareness, not visual flair.
+ISA-101-compliant HMI with muted gray-scale palette, live-updating charts, KPI gauges, anomaly timeline, rig state indicator, and query panel. Built for 12-hour shift operators who need situational awareness, not visual noise.
 
 ---
 
@@ -106,12 +106,12 @@ DrillMind/
 ├── dashboard/
 │   ├── index.html                 # ISA-101 compliant HMI layout
 │   ├── styles.css                 # Gray-scale palette, light/dark mode
-│   └── app.js                     # Real-time charts, KPI gauges, copilot chat
+│   └── app.js                     # Real-time charts, KPI gauges, query panel
 ├── src/drillmind/
 │   ├── api/server.py              # FastAPI app — 22 REST endpoints + WebSocket
 │   ├── config.py                  # YAML config loader + column registry
 │   ├── agents/
-│   │   ├── orchestrator.py        # Multi-tool agent with intent routing
+│   │   ├── orchestrator.py        # Tool-calling query engine with intent routing
 │   │   └── tools.py               # 10 domain tools (sensors, KPIs, anomalies, etc.)
 │   ├── copilot/
 │   │   ├── engine.py              # LLM provider abstraction (Ollama, OpenAI, etc.)
@@ -164,7 +164,7 @@ DrillMind/
 | GET | `/api/kpi/values` | MSE, d-exponent time series |
 | GET | `/api/kpi/summary` | KPI statistics |
 | GET | `/api/quality/report` | Data quality (gaps, spikes, flatlines) |
-| POST | `/api/copilot/query` | Ask the AI copilot anything |
+| POST | `/api/copilot/query` | Natural language query endpoint |
 | POST | `/api/rag/search` | Semantic search across DDRs |
 | GET | `/api/health` | System health check |
 | WS | `/ws/stream` | Real-time WebSocket data stream |

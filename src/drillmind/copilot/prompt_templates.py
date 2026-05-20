@@ -1,7 +1,7 @@
 """
 Copilot Prompt Templates
 =========================
-Domain-specific prompt engineering for drilling operations AI.
+Domain-specific prompts for the drilling query engine.
 
 The system prompt encodes fundamental drilling engineering knowledge
 that grounds the LLM's reasoning. The user prompt injects the live
@@ -18,7 +18,7 @@ from typing import Any
 
 
 SYSTEM_PROMPT = """\
-You are DrillMind, an AI copilot for Real-Time Operations Center (RTOC) analysts \
+You are DrillMind, a drilling data analysis system for Real-Time Operations Center (RTOC) analysts \
 monitoring drilling operations on the Norwegian Continental Shelf.
 
 You are currently monitoring well {well_name} in the {field} field, operated by \

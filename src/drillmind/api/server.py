@@ -275,7 +275,7 @@ async def lifespan(app: FastAPI):
 # ---------------------------------------------------------------------------
 app = FastAPI(
     title="DrillMind API",
-    description="Real-Time Drilling Operations AI Copilot",
+    description="Real-time drilling analytics and monitoring API",
     version="0.1.0",
     lifespan=lifespan,
 )
@@ -693,7 +693,7 @@ class CopilotQuery(BaseModel):
 
 @app.post("/api/copilot/query")
 async def copilot_query(query: CopilotQuery):
-    """Process a natural language question using multi-tool agent orchestration."""
+    """Process a natural language question using tool-based query orchestration."""
     # Wire the stored CopilotEngine's LLM into the orchestrator if configured
     copilot: CopilotEngine = _state.get("copilot")
     llm_fn = None
